@@ -1,10 +1,11 @@
 # Practice Evidence Log — repair handoff
 
-**Status:** repaired locally; deployment verification follows the release commit.
+**Status:** deployed and verified.
 
 **Base candidate:** `44c804720619807c0b8cf829701dccc814e1b82a`
 **Independent report:** `f4e38d3eae0b9f46a78b14b5583c11e11292415a`
 **Repaired:** 2026-08-28 UTC
+**Repair commit:** `b65a1be427ee48df5e1e9bdbc603f4e3e5803ab3`
 
 ## What changed
 
@@ -74,6 +75,17 @@ npm run build
 ```
 
 Deployment is static/PWA, preserving the original artifact class. `public/staticwebapp.config.json` is copied into `dist/` and controls production routing, MIME, security, and caching behavior.
+
+## Deployment and live identity
+
+`/opt/fleet/lib/deploy-static.sh work-study-evidence-log dist` deployed production build `b65a1be427ee48df5e1e9bdbc603f4e3e5803ab3` to the existing Azure Static Web App on 2026-08-28 (deployment ID `51215e08-9733-4db4-b5a6-2eb7765840f4`). GitHub `main` was pushed to the same commit before deployment.
+
+Live evidence for <https://work-study-evidence-log.sociobot.in>:
+
+- `/opt/fleet/lib/verify-url.sh` passed: HTTP 200, 820 ms load, no console/page errors, correct title/lang, one `h1`, `main`, image alt text, and labeled buttons.
+- The live root HTML SHA-256 is `649609b3b18cc95194267aaec378917802bac252c0aae7d21eaecbac31f618bf`, exactly matching `dist/index.html`.
+- Root responses include the production CSP with `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `nosniff`, referrer and permissions policies, and one-year HSTS.
+- The live manifest is `application/manifest+json`; the hashed app JavaScript is `public, max-age=31536000, immutable`; `/does-not-exist` returns HTTP 404 and serves the designed 404 page.
 
 ## Known gaps / next steps
 
