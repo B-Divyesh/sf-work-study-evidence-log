@@ -1,0 +1,10 @@
+{
+  "asset": "ceramic-transfer.png",
+  "created": "2026-08-28",
+  "generator": "/opt/fleet/lib/gen-image.sh",
+  "deployment": "factory-image",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Use case: stylized-concept. Asset type: wide web hero illustration. A quiet editorial still life on pale glacial stone: two simple hand-built ivory porcelain forms, one low study tile with a single abstract indented groove and one upright vessel fragment, connected by a thin deep-cobalt glazed channel that visibly runs from one object to the other. Matte ceramic, subtly irregular handmade edges, delicate celadon crazing, sparse mineral dust. Slightly elevated 50mm view, overcast arctic morning light, soft long shadows, generous calm negative space, sophisticated museum-catalog composition. Palette of glacier milk, iron ink, frosted celadon, deep cobalt, tiny trace of lichen. No people, hands, devices, screens, text, letters, numbers, logos, watermark, gradients, bright saturated colors, extra objects, glossy plastic, or stock-photo styling.",
+  "review": "Accepted: no text, logos, people, malformed geometry, visible seams, or unintended symbols; palette and connecting glaze line match the thesis."
+}

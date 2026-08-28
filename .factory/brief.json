@@ -1,0 +1,12 @@
+{
+  "slug": "work-study-evidence-log",
+  "title": "Practice Evidence Log",
+  "territory": "utilities",
+  "user": "Working professionals who study 30–60 minutes around a job and need to connect deliberate practice to the real troubleshooting situations it improves.",
+  "smallest_useful_product": "A local weekly log with topic, 10–60 minute practice block, source, one retrieval prompt, and a later used in work note; it shows evidence without gamified totals.",
+  "success_measure": "40% of pilot users record three application links in their first month and report one reduced lookup loop or faster diagnosis.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Default local storage and export; warn users not to paste confidential employer data; no productivity or performance claims.",
+  "state": "RESEARCHED"
+}
