@@ -1,0 +1,65 @@
+[
+  {
+    "id": "demo-isolation",
+    "claim": "The sample uses a separate demo log and leaves the user's log untouched.",
+    "where": "home action note, demo banner, README",
+    "test": "npm run test:e2e -- --grep @claim:demo-isolation",
+    "sandbox": "fresh browser context; create a real record; enter, change, reset, and leave demo; assert real data remains and demo storage is deleted"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "The log reloads offline after the first visit.",
+    "where": "home facts, connectivity notice, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for service worker control; set context offline; reload and assert sample data and offline state"
+  },
+  {
+    "id": "portable-data",
+    "claim": "The log exports every record as JSON and CSV and restores a valid JSON backup.",
+    "where": "data dialog, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:portable-data",
+    "sandbox": "fresh /demo sample; verify generated JSON and CSV contents; add a record; restore the JSON and assert the extra record is removed"
+  },
+  {
+    "id": "core-workflow",
+    "claim": "Practice blocks can be created, linked, edited, and deleted; blank text and impossible dates are rejected.",
+    "where": "practice and work-use forms, README",
+    "test": "npm run test:e2e -- --grep @claim:core-workflow",
+    "sandbox": "fresh /demo sample; reject whitespace and nine minutes; save 60 minutes; reject an earlier use; link, edit, preserve the link, and delete"
+  },
+  {
+    "id": "license-check",
+    "claim": "A license check sends only the license token and never sends log content.",
+    "where": "privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:license-check",
+    "sandbox": "fresh /demo context; intercept the billing API; verify a sample token; assert the single request contains the token and no sample record text"
+  },
+  {
+    "id": "accessible-themes",
+    "claim": "The interface supports automatic, light, and dark themes with keyboard and mobile access.",
+    "where": "theme control, README",
+    "test": "npm run test:e2e -- --grep @claim:accessible-themes",
+    "sandbox": "fresh browser context; axe-scan light and dark; test all mobile targets, keyboard focus, effective 200% zoom, and legal routes"
+  },
+  {
+    "id": "update-notice",
+    "claim": "The app notifies an open page when a new service worker finishes installing.",
+    "where": "README",
+    "test": "npm test -- --testNamePattern @claim:update-notice",
+    "sandbox": "simulated controlled registration; dispatch the first updatefound and installed events; assert one notification with that worker"
+  },
+  {
+    "id": "local-privacy",
+    "claim": "Normal logging needs no account or analytics and sends no record data away.",
+    "where": "home footer, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:local-privacy",
+    "sandbox": "fresh /demo context; monitor the whole create-and-link flow; assert no cross-origin or non-GET request and confirm no-account copy"
+  },
+  {
+    "id": "free-core-paid-review",
+    "claim": "Weekly logging and exports are free; the optional archive review costs US $12 once.",
+    "where": "home facts, paid section, data dialog, terms, README",
+    "test": "npm run test:e2e -- --grep @claim:free-core-paid-review",
+    "sandbox": "fresh /demo context without a license; assert logging and both exports are available and the optional pass copy and hosted checkout URL show $12 once"
+  }
+]

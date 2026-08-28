@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { moveWeek, startOfWeek, toCsv, validateBundle, weekContains } from '../src/model';
+import { isPracticeEntry, moveWeek, startOfWeek, toCsv, validateBundle, weekContains } from '../src/model';
 import type { PracticeEntry } from '../src/types';
 
 const entry: PracticeEntry = {
@@ -40,5 +40,20 @@ describe('portable data', () => {
     const bundle = { product: 'work-study-evidence-log', version: 1, exportedAt: new Date().toISOString(), entries: [entry] } as const;
     expect(validateBundle(bundle).entries).toHaveLength(1);
     expect(() => validateBundle({ entries: [] })).toThrow(/version 1 JSON export/);
+  });
+
+  it('rejects incomplete entries before an import can replace valid data', () => {
+    const bundle = { product: 'work-study-evidence-log', version: 1, exportedAt: '2026-08-28T10:00:00Z', entries: [{
+      id: 'broken', practicedOn: '2026-08-28', topic: 'Looks valid', minutes: 30,
+      openQuestion: '', applications: [], createdAt: '2026-08-28T10:00:00Z', updatedAt: '2026-08-28T10:00:00Z'
+    }] };
+    expect(() => validateBundle(bundle)).toThrow(/incomplete or invalid practice entry/);
+  });
+
+  it('rejects blank required text and work use before practice', () => {
+    expect(isPracticeEntry({ ...entry, topic: '   ' })).toBe(false);
+    expect(isPracticeEntry({ ...entry, source: '\t' })).toBe(false);
+    expect(isPracticeEntry({ ...entry, retrievalPrompt: '\n' })).toBe(false);
+    expect(isPracticeEntry({ ...entry, applications: [{ ...entry.applications[0], usedOn: '2026-08-26' }] })).toBe(false);
   });
 });

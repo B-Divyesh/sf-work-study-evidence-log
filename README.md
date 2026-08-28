@@ -1,21 +1,24 @@
 # Practice Evidence Log
 
-Practice Evidence Log is a private, local-first PWA for working professionals who study in short blocks and want to notice where that practice later helps. A record keeps the topic, 10–60 minute duration, source, one retrieval prompt, an optional open question, and later de-identified work-use notes. It intentionally has no streaks, scores, employee reporting, or performance claims.
+Practice Evidence Log helps working professionals connect short practice blocks to later work use. It keeps private records without scores or employee reporting.
 
 Live product: <https://work-study-evidence-log.sociobot.in>
 
+Try sample data: <https://work-study-evidence-log.sociobot.in/demo>. The demo uses separate storage and never changes your real log.
+
 ## What v1 includes
 
-- A Monday–Sunday weekly evidence shelf with full week navigation
-- Add, edit, and delete practice blocks; attach or remove later application notes
-- IndexedDB persistence with no account and no analytics
-- JSON backup/restore and analysis-friendly CSV export
-- Installable offline shell with explicit connectivity and update states
-- Automatic, light, and dark kiln treatments
-- Optional US $12 one-time Evidence Pass: all-weeks archive lens and an on-device printable transfer review
+- Create, edit, and delete practice blocks; attach later work-use notes
+- Reject blank required text and work-use dates before the practice date
+- Keep records in IndexedDB with no account or analytics
+- Export JSON and CSV, then restore a valid JSON backup
+- Reload offline after the first online visit
+- Notify an open page when an updated service worker is ready
+- Automatic, light, and dark kiln themes with keyboard and mobile access
+- Optional US $12 one-time Evidence Pass for the archive lens and printable review
 - Static `/privacy/` and `/terms/` pages
 
-The free experience includes unlimited logging, every week, JSON/CSV export, accessibility, and privacy safeguards. License verification sends only a token to the Sociobot billing API; it never sends log content.
+Weekly logging and JSON or CSV export are free. License verification sends only its token to Sociobot’s API, never log content.
 
 ## Run and verify
 
@@ -31,7 +34,9 @@ Quality commands:
 ```sh
 npm test          # unit tests
 npm run check     # TypeScript
+npm run lint      # static lint gate
 npm run test:e2e  # production build + Playwright/axe/offline checks
+npm run test:claims # every registered product claim
 npm run build     # reproducible static output in ./dist
 ```
 
@@ -49,7 +54,7 @@ No product ID is embedded; billing routes use the public product slug.
 
 ## Deploy
 
-Run `npm run build` and publish the `dist/` directory as a static site. `dist/index.html` is the root entry. Configure clean directory routes so `/privacy/` and `/terms/` serve their included `index.html` files. Do not publish source maps or inject runtime third-party scripts.
+Run `npm run build` and publish `dist/` as a static site. Its checked-in response policy config handles `/demo`, legal routes, caching, security headers, and 404s.
 
 ## Data and recovery
 

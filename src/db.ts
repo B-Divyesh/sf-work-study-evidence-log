@@ -1,12 +1,20 @@
 import type { PracticeEntry } from './types';
+import { isPracticeEntry } from './model';
 
-const DB_NAME = 'practice-evidence-log';
 const STORE_NAME = 'entries';
 const VERSION = 1;
 
+function isDemoLocation(): boolean {
+  return location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
+}
+
+function databaseName(): string {
+  return isDemoLocation() ? 'demo:practice-evidence-log' : 'practice-evidence-log';
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, VERSION);
+    const request = indexedDB.open(databaseName(), VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -29,13 +37,22 @@ async function transact<T>(mode: IDBTransactionMode, action: (store: IDBObjectSt
   });
 }
 
-export async function getEntries(): Promise<PracticeEntry[]> {
-  const entries = await transact<PracticeEntry[]>('readonly', (store, resolve, reject) => {
+export interface StoredEntries {
+  entries: PracticeEntry[];
+  invalidCount: number;
+}
+
+export async function getEntries(): Promise<StoredEntries> {
+  const stored = await transact<unknown[]>('readonly', (store, resolve, reject) => {
     const request = store.getAll();
-    request.onsuccess = () => resolve(request.result as PracticeEntry[]);
+    request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
-  return entries.sort((a, b) => b.practicedOn.localeCompare(a.practicedOn) || b.createdAt.localeCompare(a.createdAt));
+  const entries = stored.filter(isPracticeEntry);
+  return {
+    entries: entries.sort((a, b) => b.practicedOn.localeCompare(a.practicedOn) || b.createdAt.localeCompare(a.createdAt)),
+    invalidCount: stored.length - entries.length
+  };
 }
 
 export function putEntry(entry: PracticeEntry): Promise<void> {
@@ -65,4 +82,13 @@ export async function replaceEntries(entries: PracticeEntry[]): Promise<void> {
     transaction.onerror = () => reject(transaction.error ?? new Error('Import could not be saved.'));
   });
   db.close();
+}
+
+export function discardDemoDatabase(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase('demo:practice-evidence-log');
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error ?? new Error('Demo data could not be cleared.'));
+    request.onblocked = () => reject(new Error('Close other demo tabs, then try again.'));
+  });
 }

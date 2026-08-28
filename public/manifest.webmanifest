@@ -3,7 +3,7 @@
   "name": "Practice Evidence Log",
   "short_name": "Evidence Log",
   "description": "Connect deliberate practice to where it later helped at work.",
-  "start_url": "/?source=installed&v=1",
+  "start_url": "/?source=installed&v=1.0.1",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f2f5f2",

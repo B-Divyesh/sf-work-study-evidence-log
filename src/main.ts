@@ -1,10 +1,15 @@
 import './styles.css';
-import { deleteEntry, getEntries, putEntry, replaceEntries } from './db';
+import { deleteEntry, discardDemoDatabase, getEntries, putEntry, replaceEntries } from './db';
 import { formatWeek, isWebSource, localDate, moveWeek, startOfWeek, toCsv, validateBundle, weekContains } from './model';
+import { watchForServiceWorkerUpdate } from './service-worker-update';
 import type { ApplicationNote, ExportBundle, PracticeEntry } from './types';
 
 const PRODUCT = 'work-study-evidence-log';
-const LICENSE_KEY = `sb_license:${PRODUCT}`;
+const DEMO_MODE = location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
+const STORAGE_PREFIX = DEMO_MODE ? 'demo:' : '';
+const THEME_KEY = `${STORAGE_PREFIX}pel_theme`;
+const DEMO_SEEDED_KEY = 'demo:practice-evidence-log:seeded';
+const LICENSE_KEY = `${STORAGE_PREFIX}sb_license:${PRODUCT}`;
 const LICENSE_CACHE_KEY = `${LICENSE_KEY}:verdict`;
 const BILLING_BASE = (import.meta.env.VITE_BILLING_BASE_URL || 'https://api.sociobot.in').replace(/\/$/, '');
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -26,8 +31,17 @@ function applyTheme(value: string): void {
   document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', dark ? '#111918' : '#f2f5f2');
 }
 
-const storedTheme = localStorage.getItem('pel_theme') || 'system';
+const storedTheme = localStorage.getItem(THEME_KEY) || 'system';
 applyTheme(storedTheme);
+document.title = DEMO_MODE ? 'Demo — Practice Evidence Log' : 'Practice Evidence Log — Link study to work';
+if (DEMO_MODE) {
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  const canonicalUrl = 'https://work-study-evidence-log.sociobot.in/demo';
+  canonical?.setAttribute('href', canonicalUrl);
+  document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', 'Demo — Practice Evidence Log');
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.setAttribute('content', 'Demo — Practice Evidence Log');
+}
 
 app.innerHTML = `
   <header class="site-header">
@@ -37,21 +51,30 @@ app.innerHTML = `
     </a>
     <nav aria-label="Primary">
       <a href="#log">Evidence</a>
+      <a href="/demo">Demo</a>
       <button class="plain-button" id="open-data" type="button">Data & access</button>
       <label class="theme-label" for="theme"><span>Theme</span><select id="theme" aria-label="Color theme"><option value="system">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
     </nav>
   </header>
 
+  ${DEMO_MODE ? `<aside class="demo-banner" aria-label="Demo mode"><p><strong>Demo — sample data, nothing is saved to your log.</strong></p><div><button class="plain-button" id="reset-demo" type="button">Reset demo</button><button class="secondary compact" id="start-real" type="button">Start for real</button></div></aside>` : ''}
+
   <main id="main">
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="eyebrow">A private record of transfer</p>
-        <h1 id="page-title">Notice where practice becomes useful.</h1>
-        <p class="lede">Keep one retrieval prompt from a focused study block, then link it to the real situation where it helped. Your evidence stays on this device.</p>
+        <h1 id="page-title">Connect practice to where it helps.</h1>
+        <p class="lede">For working professionals who study around a job, this log connects a focused practice block to later work use.</p>
         <div class="hero-actions">
-          <button class="primary" id="open-entry" type="button">Log practice</button>
-          <a class="text-link" href="#how-it-works">See the quiet loop <span aria-hidden="true">↓</span></a>
+          <a class="primary" href="/demo">Try it with sample data</a>
+          <button class="secondary" id="open-entry" type="button">Log your practice</button>
         </div>
+        <p class="action-note">The sample opens a separate demo log. Your own log stays untouched.</p>
+        <ul class="hero-facts" aria-label="Product facts">
+          <li><strong>Private:</strong> records stay on this device.</li>
+          <li><strong>Offline:</strong> log after your first visit.</li>
+          <li><strong>Price:</strong> weekly logging and exports are free. The optional review costs $12 once.</li>
+        </ul>
         <p class="privacy-nudge"><span aria-hidden="true">◇</span><span><strong>Keep work details abstract.</strong> Don’t paste customer names, credentials, internal links, or confidential incident data.</span></p>
       </div>
       <figure class="hero-art">
@@ -112,9 +135,9 @@ app.innerHTML = `
   </main>
 
   <footer>
-    <p><strong>Practice Evidence Log</strong><br />Private by default. No account, analytics, or employer view.</p>
+    <p><strong>Practice Evidence Log</strong><br />A private practice-to-work record with no account or analytics.</p>
     <nav aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="plain-button" id="footer-data" type="button">Export & restore</button></nav>
-    <p class="disclosure">Ceramic still life generated for this product with the factory image model.</p>
+    <p class="disclosure">Ceramic still life generated for this product. Built by Param Factory · v1.0.1</p>
   </footer>
 
   <div class="connectivity" id="connectivity" role="status" hidden><span aria-hidden="true">○</span> Offline — local logging and export still work.</div>
@@ -187,6 +210,50 @@ function dateLabel(value: string): string {
   return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(`${value}T12:00:00`));
 }
 
+function shiftDate(value: string, days: number): string {
+  const date = new Date(`${value}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return localDate(date);
+}
+
+function sampleEntries(): PracticeEntry[] {
+  const today = localDate();
+  const firstDate = shiftDate(today, -2);
+  const secondDate = shiftDate(today, -1);
+  const now = new Date().toISOString();
+  return [
+    {
+      id: 'demo-retry-signals',
+      practicedOn: firstDate,
+      topic: 'Reading retry signals',
+      minutes: 30,
+      source: 'Designing Data-Intensive Applications, chapter 8',
+      retrievalPrompt: 'Which signals separate a slow dependency from a failed retry policy?',
+      openQuestion: 'When should jitter increase with each attempt?',
+      applications: [{
+        id: 'demo-retry-use',
+        usedOn: secondDate,
+        note: 'Recognised clustered retries and checked dependency latency before changing the timeout.',
+        createdAt: now
+      }],
+      createdAt: now,
+      updatedAt: now
+    },
+    {
+      id: 'demo-query-plan',
+      practicedOn: today,
+      topic: 'Comparing query plans',
+      minutes: 20,
+      source: 'PostgreSQL documentation: EXPLAIN',
+      retrievalPrompt: 'What makes an estimated row count differ from the actual count?',
+      openQuestion: 'Which statistics should be refreshed first?',
+      applications: [],
+      createdAt: now,
+      updatedAt: now
+    }
+  ];
+}
+
 function sourceMarkup(source: string): string {
   if (isWebSource(source)) return `<a href="${esc(source)}" target="_blank" rel="noreferrer">Open source <span class="sr-only">(opens in a new tab)</span> ↗</a>`;
   return `<span>${esc(source)}</span>`;
@@ -242,11 +309,25 @@ function openEntry(entry?: PracticeEntry): void {
 }
 
 async function saveEntry(form: HTMLFormElement): Promise<void> {
-  if (!form.reportValidity()) return;
+  const topicInput = form.elements.namedItem('topic') as HTMLInputElement;
+  const sourceInput = form.elements.namedItem('source') as HTMLInputElement;
+  const promptInput = form.elements.namedItem('retrievalPrompt') as HTMLTextAreaElement;
+  const requiredText = [
+    [topicInput, 'Enter a topic, not spaces.'],
+    [sourceInput, 'Enter a source, not spaces.'],
+    [promptInput, 'Enter a retrieval prompt, not spaces.']
+  ] as const;
+  for (const [field, message] of requiredText) field.setCustomValidity(field.value.trim() ? '' : message);
+  if (!form.reportValidity()) {
+    byId('entry-error').textContent = requiredText.some(([field]) => !field.value.trim())
+      ? 'Complete each required field with text, not spaces.'
+      : 'Choose 10 to 60 minutes in five-minute steps.';
+    return;
+  }
   const data = new FormData(form);
   const minutes = Number(data.get('minutes'));
-  if (minutes < 10 || minutes > 60) {
-    byId('entry-error').textContent = 'Choose a practice block between 10 and 60 minutes.';
+  if (!Number.isInteger(minutes) || minutes < 10 || minutes > 60 || minutes % 5 !== 0) {
+    byId('entry-error').textContent = 'Choose 10 to 60 minutes in five-minute steps.';
     return;
   }
   const existing = entries.find((entry) => entry.id === editingId);
@@ -282,18 +363,33 @@ function openApplication(id: string): void {
   byId('application-title').textContent = entry ? `Where did “${entry.topic}” help?` : 'Where did it help?';
   const form = byId<HTMLFormElement>('application-form');
   form.reset();
-  (form.elements.namedItem('usedOn') as HTMLInputElement).value = localDate();
+  const usedOn = form.elements.namedItem('usedOn') as HTMLInputElement;
+  usedOn.value = localDate() < (entry?.practicedOn ?? '') ? entry!.practicedOn : localDate();
+  usedOn.min = entry?.practicedOn ?? '';
   byId('application-error').textContent = '';
   applicationDialog.showModal();
   window.setTimeout(() => byId<HTMLTextAreaElement>('application-note').focus(), 0);
 }
 
 async function saveApplication(form: HTMLFormElement): Promise<void> {
-  if (!form.reportValidity() || !applicationEntryId) return;
+  const noteInput = form.elements.namedItem('note') as HTMLTextAreaElement;
+  noteInput.setCustomValidity(noteInput.value.trim() ? '' : 'Enter an application note, not spaces.');
+  if (!form.reportValidity() || !applicationEntryId) {
+    byId('application-error').textContent = noteInput.value.trim()
+      ? 'Choose the practice date or a later date.'
+      : 'Enter an application note with text, not spaces.';
+    return;
+  }
   const entry = entries.find((item) => item.id === applicationEntryId);
   if (!entry) return;
   const data = new FormData(form);
-  const application: ApplicationNote = { id: uid(), usedOn: String(data.get('usedOn')), note: String(data.get('note')).trim(), createdAt: new Date().toISOString() };
+  const usedOn = String(data.get('usedOn'));
+  if (usedOn < entry.practicedOn) {
+    byId('application-error').textContent = `Choose ${dateLabel(entry.practicedOn)} or a later date.`;
+    (form.elements.namedItem('usedOn') as HTMLInputElement).focus();
+    return;
+  }
+  const application: ApplicationNote = { id: uid(), usedOn, note: String(data.get('note')).trim(), createdAt: new Date().toISOString() };
   const updated = { ...entry, applications: [...entry.applications, application], updatedAt: new Date().toISOString() };
   try {
     await putEntry(updated);
@@ -412,10 +508,15 @@ byId('footer-data').addEventListener('click', () => dataDialog.showModal());
 byId<HTMLSelectElement>('theme').value = storedTheme;
 byId<HTMLSelectElement>('theme').addEventListener('change', (event) => {
   const value = (event.target as HTMLSelectElement).value;
-  localStorage.setItem('pel_theme', value);
+  localStorage.setItem(THEME_KEY, value);
   applyTheme(value);
 });
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if ((localStorage.getItem('pel_theme') || 'system') === 'system') applyTheme('system'); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if ((localStorage.getItem(THEME_KEY) || 'system') === 'system') applyTheme('system'); });
+for (const id of ['topic', 'source', 'retrieval-prompt', 'application-note']) {
+  byId<HTMLInputElement | HTMLTextAreaElement>(id).addEventListener('input', (event) => {
+    (event.currentTarget as HTMLInputElement | HTMLTextAreaElement).setCustomValidity('');
+  });
+}
 byId('previous-week').addEventListener('click', () => { weekStart = moveWeek(weekStart, -1); render(); });
 byId('next-week').addEventListener('click', () => { weekStart = moveWeek(weekStart, 1); render(); });
 byId('this-week').addEventListener('click', () => { weekStart = startOfWeek(localDate()); render(); });
@@ -470,6 +571,29 @@ byId('print-review').addEventListener('click', () => window.print());
 window.addEventListener('online', updateConnectivity);
 window.addEventListener('offline', updateConnectivity);
 
+byId('reset-demo')?.addEventListener('click', async () => {
+  try {
+    entries = sampleEntries();
+    await replaceEntries(entries);
+    localStorage.setItem(DEMO_SEEDED_KEY, '1');
+    weekStart = startOfWeek(localDate());
+    archiveOpen = false;
+    render();
+    announce('Demo reset to the original sample.');
+  } catch {
+    announce('The demo could not reset. Reload and try again.');
+  }
+});
+byId('start-real')?.addEventListener('click', async () => {
+  try {
+    await discardDemoDatabase();
+    Object.keys(localStorage).filter((key) => key.startsWith('demo:')).forEach((key) => localStorage.removeItem(key));
+    location.assign('/');
+  } catch (error) {
+    announce(error instanceof Error ? error.message : 'The demo could not be cleared.');
+  }
+});
+
 async function registerServiceWorker(): Promise<void> {
   if (!('serviceWorker' in navigator)) return;
   try {
@@ -484,10 +608,7 @@ async function registerServiceWorker(): Promise<void> {
         worker.postMessage({ type: 'SKIP_WAITING' });
       });
     };
-    if (registration.waiting) showUpdate(registration.waiting);
-    registration.addEventListener('updatefound', () => registration.installing?.addEventListener('statechange', () => {
-      if (registration.installing?.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration.installing);
-    }));
+    watchForServiceWorkerUpdate(registration, () => Boolean(navigator.serviceWorker.controller), showUpdate);
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) location.reload(); });
   } catch { /* The local app remains usable without install support. */ }
 }
@@ -496,7 +617,18 @@ async function start(): Promise<void> {
   updateConnectivity();
   initialiseLicense();
   try {
-    entries = await getEntries();
+    const stored = await getEntries();
+    entries = stored.entries;
+    if (stored.invalidCount > 0) {
+      const warning = byId('storage-warning');
+      warning.hidden = false;
+      warning.textContent = `${stored.invalidCount} unreadable ${stored.invalidCount === 1 ? 'record was' : 'records were'} skipped. Export the readable log before clearing site data.`;
+    }
+    if (DEMO_MODE && !localStorage.getItem(DEMO_SEEDED_KEY)) {
+      entries = sampleEntries();
+      await replaceEntries(entries);
+      localStorage.setItem(DEMO_SEEDED_KEY, '1');
+    }
   } catch {
     storageReady = false;
     const warning = byId('storage-warning');

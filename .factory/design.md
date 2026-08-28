@@ -35,7 +35,7 @@ Scale: 14px detail, 16–18px body, 21px section, 30–48px display. Body leadin
 
 The base rhythm is 4px with working intervals of 8, 12, 16, 24, 32, 48, and 72px. The desktop canvas is at most 1180px; working text is narrower. Corners are softly imperfect in spirit but deterministic in code: 8px for inputs, 14px for sheets, and a single asymmetrical 28px corner on the hero vessel. Shadows are diffuse and low contrast, like an object sitting on chalky stone. Touch targets are at least 44px.
 
-At 390px, navigation labels remain visible, the hero artwork becomes a shallow header object, and the evidence list becomes a single continuous stack. No essential action moves behind hover or a fixed bar.
+At 390px, navigation labels remain visible, the hero artwork becomes a shallow supporting object below the task copy, and the evidence list becomes a single continuous stack. No essential action moves behind hover or a fixed bar.
 
 ## Interaction grammar
 
@@ -68,4 +68,6 @@ Final generation prompt:
 
 ## Provenance
 
-The hero is generated specifically for this product with the factory Azure image deployment (`factory-image`) on 2026-08-28 using `/opt/fleet/lib/gen-image.sh`; the exact prompt appears above and in the asset sidecar. It is original, contains no people, brands, or copyrighted characters, and is disclosed as generated in the footer. The selected raster is reviewed for text artifacts, unintended symbols, edge seams, and palette fit before inclusion. WebP/AVIF derivatives are produced locally; the source PNG and JSON prompt remain in `assets/src/`.
+The hero is generated specifically for this product with the factory Azure image deployment (`factory-image`) on 2026-08-28 using `/opt/fleet/lib/gen-image.sh`; the exact prompt appears above and in the asset sidecar. It is original, contains no people, brands, or copyrighted characters, and is disclosed as generated in the footer. The selected raster is reviewed for text artifacts, unintended symbols, edge seams, and palette fit before inclusion. WebP derivatives are produced locally; the source PNG and JSON prompt remain in `assets/src/`.
+
+The 1200×630 social preview is a center crop of that same original ceramic still life, not a separate generation. The 180×180 touch icon and SVG favicon derive from the hand-authored vessel-and-seam mark in `assets/src/app-icon.svg`. They were reviewed again during repair on 2026-08-28 for stray text, seams, unintended symbols, and edge clarity.

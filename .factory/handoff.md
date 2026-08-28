@@ -1,31 +1,80 @@
-# Practice Evidence Log — independent verification handoff
+# Practice Evidence Log — repair handoff
 
-**Status: FAIL — do not release**
+**Status:** repaired locally; deployment verification follows the release commit.
 
-**Candidate:** `44c804720619807c0b8cf829701dccc814e1b82a`
+**Base candidate:** `44c804720619807c0b8cf829701dccc814e1b82a`
+**Independent report:** `f4e38d3eae0b9f46a78b14b5583c11e11292415a`
+**Repaired:** 2026-08-28 UTC
 
-**URL:** <https://work-study-evidence-log.sociobot.in>
+## What changed
 
-**Verified:** 2026-08-28 UTC
+All release-blocking verifier findings are repaired without changing the core local-first practice workflow:
 
-The live deployment matches every generated file in this candidate, so the result is not a deployment-only failure.
+- Added `.factory/claims.json` with one tagged regression test for every visitor-facing product claim. `npm run test:claims` runs all eight browser claims and the service-worker update claim.
+- Added a one-click `/demo` and `?demo=1` sandbox with two realistic sample practice blocks, a persistent demo banner, **Reset demo**, **Start for real**, and the separate IndexedDB database `demo:practice-evidence-log`. The real log remains `practice-evidence-log` and is never read or written in demo mode. `.factory/demo.md` documents this behavior.
+- Rewrote the first screen in plain language for working professionals studying around a job. It now exposes **Try it with sample data**, says what happens next, and states short privacy, offline, and price facts.
+- Made import validation structural and strict before IndexedDB replacement. Invalid or incomplete entries (including missing `source` or `retrievalPrompt`) cannot replace valid data. Existing unreadable records are skipped with a recovery warning instead of crashing rendering.
+- Reject whitespace-only required fields, five-minute-step violations, blank work-use notes, and work-use dates before their practice date. Imported entries are held to the same rules.
+- Added static response policy: CSP, frame denial, security headers, manifest MIME, a designed 404, `/demo` rewrite, and one-year immutable caching for every `/assets/*` build asset.
+- Fixed service-worker update observation for the first worker that transitions to `installed` in an already-controlled page.
+- Fixed mobile target sizing, focusability, and narrow/200%-equivalent layout behavior. All visible controls are at least 44 px tall at 390 px; the header wraps rather than clipping controls.
+- Completed route metadata, canonical/Open Graph/Twitter metadata, apple touch icon, social preview, sitemap demo URL, footer build identity, legal copy audit, and repair documentation.
 
-Release blockers:
+## Exact regression coverage
 
-- `.factory/claims.json` is missing; claim-like copy has no required one-to-one sandbox tests.
-- There is no one-click sample demo, demo isolation/banner/reset, or `.factory/demo.md`.
-- The cold first screen does not identify working professionals and omits required offline/price facts.
-- An incomplete but accepted import replaces IndexedDB, throws on render, and leaves the app broken after reload, potentially losing the prior log.
+| Finding / claim | Regression coverage |
+| --- | --- |
+| Missing claims registry | `.factory/claims.json`; `npm run test:claims` |
+| Missing demo and isolation | `@claim:demo-isolation` Playwright test |
+| Offline demo reload | `@claim:offline-reload` Playwright test |
+| CSV/JSON export and restore | `@claim:portable-data` Playwright test |
+| Malformed import data loss/crash | `portable data rejects incomplete entries` Vitest test and `malformed imports are rejected…` Playwright test |
+| Whitespace and impossible chronology | `@claim:core-workflow` Playwright test plus model validation test |
+| Missing policy/404/manifest/metadata | `metadata, manifest, 404, and deployment response policy are complete` Playwright test |
+| Missed first SW update | `@claim:update-notice` Vitest test |
+| Mobile/a11y issues | `@claim:accessible-themes` Playwright + axe test |
+| Local privacy and billing privacy | `@claim:local-privacy` and `@claim:license-check` Playwright tests |
 
-Other material defects include whitespace-only required records, work-use dates before practice dates, no CSP/frame policy or real 404, 30-second caching on hashed assets, an update toast that appears only after another reload, undersized/hidden-focus mobile targets, and incomplete metadata/documentation.
+## Verification run locally
 
-Passing evidence:
+From a clean dependency install:
 
-- `npm ci`, `npm test` (4/4), `npm run check`, `npm run build`, `npm run test:e2e` (4/4), and `npm audit` passed.
-- Core create/link/edit/delete, valid import, JSON/CSV export, persistence, and 10/60-minute boundaries worked.
-- Offline reload worked. Normal logging made no outbound requests.
-- Axe found 0 serious/critical issues in both themes and legal pages.
-- Live Lighthouse mobile: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s, CLS 0.
-- License verification rate limiting worked: a 100-way burst yielded 29×200 and 71×429 after one prior probe; 429 included `Retry-After: 3`.
+```sh
+npm ci
+npm test
+npm run check
+npm run lint
+npm run build
+npm run test:e2e
+npm run test:claims
+npm audit --audit-level=high
+```
 
-Full commands, evidence, deployment hashes, and severity-ranked defects are in [`.factory/verification.md`](verification.md).
+Results on 2026-08-28:
+
+- `npm ci`: 58 packages installed; 0 vulnerabilities.
+- `npm test`: 8/8 Vitest tests passed.
+- `npm run check` and `npm run lint`: passed (`tsc --noEmit`).
+- `npm run build`: passed; `dist/index.html` is the static root.
+- `npm run test:e2e`: 11/11 passed. It covers desktop and 390 px browser flows, keyboard focus, dialogs, light/dark axe scans, 200%-equivalent narrow layout, privacy, offline reload, and license behavior.
+- `npm run test:claims`: passed: 1/1 tagged Vitest claim plus 8/8 tagged Playwright claims.
+- `npm audit --audit-level=high`: 0 vulnerabilities.
+- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/ …`: passed; 583 ms load, no console/page errors, `lang=en`, one `h1`, `main`, image alt text, and labeled buttons.
+- Mobile Lighthouse against the production build: Performance 99, Accessibility 100, Best Practices 100, SEO 100; FCP 1.0 s, LCP 1.6 s, CLS 0. Lighthouse emitted its report before Chromium exited during teardown.
+- Built payloads: JS 34,715 bytes raw (11.41 KB gzip), CSS 18,004 bytes raw (4.84 KB gzip), mobile hero 29,088 bytes, desktop hero 80,852 bytes. These are within the applicable budgets.
+
+## Run and deploy
+
+```sh
+npm ci
+npm run test:claims
+npm run test:e2e
+npm run build
+/opt/fleet/lib/deploy-static.sh work-study-evidence-log dist
+```
+
+Deployment is static/PWA, preserving the original artifact class. `public/staticwebapp.config.json` is copied into `dist/` and controls production routing, MIME, security, and caching behavior.
+
+## Known gaps / next steps
+
+No known product gaps from the independent report remain. Re-run the deployed URL verifier after every deployment so the Azure Static Web Apps headers, 404 response, manifest MIME, immutable asset caching, and live byte identity are checked on the actual host.

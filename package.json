@@ -1,7 +1,7 @@
 {
   "name": "work-study-evidence-log",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
-    "check": "tsc --noEmit"
+    "test:claims": "npm test -- --testNamePattern @claim: && npm run build && playwright test --grep @claim:",
+    "check": "tsc --noEmit",
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
