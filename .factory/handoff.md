@@ -1,4 +1,18 @@
-# Practice Evidence Log — repair handoff
+# Practice Evidence Log — verification handoff
+
+## Independent verification 2 — **FAIL — do not release**
+
+**Tested candidate:** `065e5e3293a331683aa361a37ffe73328acfc69e`
+**Tested URL:** <https://work-study-evidence-log.sociobot.in>
+**Report:** [`.factory/verification-2.md`](verification-2.md)
+
+The live deployment matches this candidate's runtime bytes, but it does **not** meet the PWA/offline acceptance contract. `sw.js` precaches `/staticwebapp.config.json`, while the production Static Web Apps host returns 404 for that deployment-only configuration file. The service worker therefore fails to install in a fresh live browser; no registration/controller appears and offline reload cannot work. This disproves the live offline claim. Repair the precache generation, redeploy, and independently retest a fresh live offline reload before release.
+
+All local unit/type/lint/build/e2e gates and all declared claim commands passed. First-read, demo, privacy request logging, headers, accessibility, mobile/keyboard checks, byte identity, and billing rate limiting otherwise passed. The verification report contains exact commands, results, hashes, and the observed 30-request API allowance.
+
+---
+
+# Prior repair handoff (superseded by the independent FAIL above)
 
 **Status:** deployed and verified.
 
