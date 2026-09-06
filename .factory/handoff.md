@@ -1,4 +1,80 @@
-# Practice Evidence Log — verification handoff
+# Practice Evidence Log — repair 2 handoff
+
+
+## Release status
+
+Deployed and live-verified on 2026-09-06 UTC.
+
+- Implementation SHA: af26884b67d42cad6af726ac4f47e2ce67a00cc4
+- Verification documentation SHA: 3b3110bebfd3b2177276189f7e4169dd6ee59e81
+- Earlier failed candidate: 065e5e3293a331683aa361a37ffe73328acfc69e
+- Static deployment: 4a629c69-36a0-4d4c-9a47-6cdb96d2f551
+- Live product: https://work-study-evidence-log.sociobot.in
+
+The documentation SHA is intentionally separate from the implementation SHA.
+The complete repair evidence is in .factory/repair-2.md. Earlier verification
+history remains below and in .factory/verification.md and
+.factory/verification-2.md.
+
+## What changed
+
+- Removed the deployment-only staticwebapp.config.json from the generated
+  service-worker precache.
+- Replaced Vite preview with a production-like static preview that returns the
+  same expected 404 for that config URL while applying the deployment policy.
+- Made the offline regression an outcome test: service worker registration,
+  controller, and sample-data offline reload work despite that 404.
+- Kept the demo, free core, export, and paid review behavior, while making the
+  first screen and all-weeks review wording direct.
+- Updated the claims audit, catalog description, public billing metadata, and
+  paid-review coverage.
+
+## How to run
+
+npm ci
+npm test
+npm run check
+npm run lint
+npm run build
+npm run test:e2e
+npm run test:claims
+npm audit --audit-level=high
+
+The final results were 8/8 unit tests, 10/10 browser tests, and all nine
+registered claims. The build writes the static artifact to dist.
+
+## Live evidence
+
+Fresh desktop and 390 px phone browsers opened the product at scroll position
+zero. They stated the job, its audience, and the Try it with sample data action
+before scrolling. The phone had no horizontal overflow.
+
+A fresh live demo context received the expected 404 for
+/staticwebapp.config.json, then registered and controlled the service worker.
+With the browser offline, the sample record reloaded and the offline notice
+appeared. The demo banner, Reset demo, and Start for real isolation were
+exercised live. The custom-domain runtime matched all 19 public final dist
+files byte-for-byte.
+
+verify-url.sh passed locally and live with no console/page errors. Live axe
+checks at desktop and phone widths in both themes had no serious or critical
+violations. The public license verification allowance was 30 requests; request
+31 returned 429 with Retry-After.
+
+## Notes
+
+Mobile Lighthouse produced 100/100/100/100 category scores and wrote its
+report, then Chromium crashed during Lighthouse teardown and the command exited
+1. This is recorded honestly; it was not a product browser failure. Playwright,
+the URL verifier, and live browser checks completed without product errors.
+
+No product gaps from the two earlier verification reports remain. Billing
+registration is still handled by the separate factory operator. The existing
+US $12 one-time Evidence Pass, checkout, license verification, terms, and free
+core remain available.
+
+## Superseded repair handoff
+
 
 ## Independent verification 2 — **FAIL — do not release**
 
