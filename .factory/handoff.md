@@ -1,4 +1,33 @@
-# Practice Evidence Log — repair 2 handoff
+# Practice Evidence Log — handoff
+
+## Independent verification 3 — PASS
+
+Fresh independent QA completed on 2026-09-06 UTC against implementation
+`af26884b67d42cad6af726ac4f47e2ce67a00cc4`, supplied verification documentation
+`3b3110bebfd3b2177276189f7e4169dd6ee59e81`, and documentation base
+`8af010f83e451140e5e8870f59e75522e9acd7b3`.
+
+Verdict: **PASS** — zero findings and zero untested public claims.
+
+From a clean detached checkout, unit 8/8, e2e 10/10, all nine exact claim
+commands, aggregate claims, type/lint/build, audit, and local URL verification
+passed. All 19 public build files matched the live runtime byte-for-byte.
+
+Fresh desktop and phone contexts confirmed the job, audience, sample action,
+and three facts before scrolling. The live sample, persistent demo label, reset,
+start-for-real isolation, normal/invalid/boundary/recovery flows, offline reload,
+keyboard and focus behavior, reduced motion, legal routes, designed 404,
+headers, request privacy, hosted checkout, and billing rate limit passed.
+Settled populated-demo axe scans passed in both themes at desktop and phone
+widths. Fresh live mobile Lighthouse completed successfully at 100/100/100/100
+with FCP 0.9 s, LCP 1.1 s, TBT 30 ms, and CLS 0.
+
+Full evidence: `.factory/verification-3.md` and `/work/.evidence/verify-3/`.
+No product code was changed. No known product gaps remain.
+
+---
+
+## Repair 2 handoff
 
 
 ## Release status
