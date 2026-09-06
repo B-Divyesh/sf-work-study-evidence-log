@@ -1,5 +1,35 @@
 # Practice Evidence Log — handoff
 
+## Strict review 1 — PASS
+
+Fresh strict review completed on 2026-09-06 UTC against implementation
+`af26884b67d42cad6af726ac4f47e2ce67a00cc4` and documentation base
+`a642f2b0cf8632e55f8d67237273a1dfaa66200a`.
+
+Verdict: **PASS** — zero findings of every severity and zero untested public
+claims. No product code was changed.
+
+From a clean detached checkout, unit 8/8, e2e 10/10, all nine exact claim
+commands, aggregate claims, type/lint/build, audit, and local/live URL
+verification passed. All 19 public build files matched the live runtime
+byte-for-byte.
+
+Fresh desktop and phone contexts confirmed the job, audience, first action,
+separate-demo note, and privacy/offline/price facts before scrolling. The live
+demo, reset, start-for-real isolation, normal and invalid workflows, export and
+recovery, offline reload, update test, accessibility, keyboard focus, reduced
+motion, legal routes, designed 404, security headers, request privacy, hosted
+checkout, invalid license, and 30-request allowance all passed.
+
+A fresh Lighthouse retry exited successfully at 100/100/100/100 with FCP 1.0
+s, LCP 1.1 s, TBT 10 ms, and CLS 0. The first attempt had a Chromium tab crash
+before producing a report and is retained in the evidence.
+
+Full report: `.factory/review-1.md`. Evidence:
+`/work/.evidence/review-1/`. No known product gaps remain.
+
+---
+
 ## Independent verification 3 — PASS
 
 Fresh independent QA completed on 2026-09-06 UTC against implementation
