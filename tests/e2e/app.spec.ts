@@ -107,6 +107,12 @@ test('@claim:local-privacy normal demo logging sends no record data or analytics
 });
 
 test('@claim:free-core-paid-review core logging and exports are free while the $12 review is optional', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'print', {
+      configurable: true,
+      value: () => { document.documentElement.dataset.printRequested = 'true'; }
+    });
+  });
   await page.goto('/demo');
   await expect(page.getByRole('button', { name: 'Log your practice' })).toBeVisible();
   await page.getByRole('button', { name: 'Data & access' }).click();
@@ -114,6 +120,15 @@ test('@claim:free-core-paid-review core logging and exports are free while the $
   await expect(page.getByRole('button', { name: 'Export CSV' })).toBeVisible();
   await expect(page.getByText('Evidence pass · $12 once')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Buy the evidence pass' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/work-study-evidence-log/checkout');
+  await page.evaluate(() => localStorage.setItem('demo:sb_license:work-study-evidence-log:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() })));
+  await page.reload();
+  await page.getByRole('button', { name: 'Open transfer review' }).click();
+  await expect(page.getByRole('dialog', { name: 'Transfer review' })).toBeVisible();
+  await page.getByRole('button', { name: 'Print review' }).click();
+  await expect.poll(() => page.locator('html').getAttribute('data-print-requested')).toBe('true');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'View all practice' }).click();
+  await expect(page.getByRole('heading', { name: 'All practice blocks' })).toBeVisible();
 });
 
 test('malformed imports are rejected without replacing valid data or breaking reload', async ({ page }) => {
@@ -196,20 +211,20 @@ test('@claim:license-check license verification sends only the token and never l
 
 test('metadata, manifest, 404, and deployment response policy are complete', async ({ page, request }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle('Practice Evidence Log — Link study to work');
+  await expect(page).toHaveTitle('Practice Evidence Log — Link practice to work');
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://work-study-evidence-log.sociobot.in/');
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-preview\.jpg$/);
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/assets/apple-touch-icon.png');
   const manifestResponse = await request.get('/manifest.webmanifest');
   expect(manifestResponse.headers()['content-type']).toContain('application/manifest+json');
-  const config = await (await request.get('/staticwebapp.config.json')).json();
-  expect(config.globalHeaders['Content-Security-Policy']).toContain("frame-ancestors 'none'");
-  expect(config.globalHeaders['X-Frame-Options']).toBe('DENY');
-  expect(config.routes.find((route: { route: string }) => route.route === '/assets/*').headers['Cache-Control']).toContain('immutable');
-  expect(config.routes.find((route: { route: string }) => route.route === '/manifest.webmanifest').headers['Content-Type']).toBe('application/manifest+json');
-  expect(config.mimeTypes['.webmanifest']).toBe('application/manifest+json');
-  expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
-  await page.goto('/404.html');
+  expect(manifestResponse.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
+  expect(manifestResponse.headers()['x-frame-options']).toBe('DENY');
+  const assetResponse = await request.get('/assets/ceramic-transfer-720.webp');
+  expect(assetResponse.headers()['cache-control']).toContain('immutable');
+  const configResponse = await request.get('/staticwebapp.config.json');
+  expect(configResponse.status()).toBe(404);
+  const missingResponse = await page.goto('/does-not-exist');
+  expect(missingResponse?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('That page is not here.');
 });
 
@@ -224,7 +239,9 @@ test('@claim:accessible-themes desktop, mobile, keyboard, zoom, and accessibilit
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Link practice to later work use.');
   await expect(page.getByText(/For working professionals who study around a job/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Try it with sample data' })).toBeVisible();
   await expect(page.getByText('Private:', { exact: false })).toBeVisible();
   await expect(page.getByText('Offline:', { exact: false })).toBeVisible();
   await expect(page.getByText('Price:', { exact: false })).toBeVisible();
@@ -262,17 +279,4 @@ test('@claim:accessible-themes desktop, mobile, keyboard, zoom, and accessibilit
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
   }
-});
-
-test('a cached verified license reveals only the additive review tools', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('sb_license:work-study-evidence-log:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() })));
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Open transfer review' }).click();
-  await expect(page.getByRole('dialog', { name: 'Transfer review' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'View archive' }).click();
-  await expect(page.getByRole('heading', { name: 'Archive lens' })).toBeVisible();
-  await page.getByRole('button', { name: 'Data & access' }).click();
-  await expect(page.getByRole('button', { name: 'Export JSON' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Export CSV' })).toBeVisible();
 });

@@ -33,7 +33,7 @@ function applyTheme(value: string): void {
 
 const storedTheme = localStorage.getItem(THEME_KEY) || 'system';
 applyTheme(storedTheme);
-document.title = DEMO_MODE ? 'Demo — Practice Evidence Log' : 'Practice Evidence Log — Link study to work';
+document.title = DEMO_MODE ? 'Demo — Practice Evidence Log' : 'Practice Evidence Log — Link practice to work';
 if (DEMO_MODE) {
   const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
   const canonicalUrl = 'https://work-study-evidence-log.sociobot.in/demo';
@@ -62,9 +62,9 @@ app.innerHTML = `
   <main id="main">
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
-        <p class="eyebrow">A private record of transfer</p>
-        <h1 id="page-title">Connect practice to where it helps.</h1>
-        <p class="lede">For working professionals who study around a job, this log connects a focused practice block to later work use.</p>
+        <p class="eyebrow">Private practice log</p>
+        <h1 id="page-title">Link practice to later work use.</h1>
+        <p class="lede">For working professionals who study around a job, log each 10–60 minute practice block and later work use.</p>
         <div class="hero-actions">
           <a class="primary" href="/demo">Try it with sample data</a>
           <button class="secondary" id="open-entry" type="button">Log your practice</button>
@@ -82,7 +82,7 @@ app.innerHTML = `
           <source media="(max-width: 700px)" srcset="/assets/ceramic-transfer-720.webp" />
           <img src="/assets/ceramic-transfer-1200.webp" width="1200" height="800" alt="Two pale ceramic forms connected by a cobalt glaze line, representing practice carried into work" decoding="async" fetchpriority="high" />
         </picture>
-        <figcaption>Practice on one side. Lived evidence on the other.</figcaption>
+        <figcaption>A practice block linked to a work-use note.</figcaption>
       </figure>
     </section>
 
@@ -91,7 +91,7 @@ app.innerHTML = `
     <section class="log-section" id="log" aria-labelledby="week-heading">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Weekly shelf</p>
+          <p class="eyebrow">Weekly log</p>
           <h2 id="week-heading">This week</h2>
           <p id="week-range" class="muted"></p>
         </div>
@@ -103,7 +103,7 @@ app.innerHTML = `
       </div>
       <div id="storage-warning" class="notice danger" role="alert" hidden></div>
       <div id="evidence-list" class="evidence-list" aria-live="polite" aria-busy="true">
-        <div class="loading-slip"><span></span><span></span><span></span><p>Opening your local shelf…</p></div>
+        <div class="loading-slip"><span></span><span></span><span></span><p>Opening your local log…</p></div>
       </div>
       <div class="below-list-actions">
         <button class="secondary" id="add-from-list" type="button">Log another practice block</button>
@@ -113,21 +113,21 @@ app.innerHTML = `
 
     <section class="method" id="how-it-works" aria-labelledby="method-title">
       <div class="method-intro">
-        <p class="eyebrow">The quiet loop</p>
-        <h2 id="method-title">A trail, not a score.</h2>
+        <p class="eyebrow">How it works</p>
+        <h2 id="method-title">Record practice and later work use.</h2>
         <p>No streaks and no performance claims. Just enough structure to recall what you practised and notice when it carried into a real task.</p>
       </div>
       <ol class="method-steps">
-        <li><span>01</span><div><h3>Leave a prompt</h3><p>Record one question your future self should be able to answer without looking.</p></div></li>
-        <li><span>02</span><div><h3>Return after work</h3><p>When the idea helps, add a short, de-identified note to the same practice block.</p></div></li>
-        <li><span>03</span><div><h3>Read the seam</h3><p>Review the connection itself—not minutes accumulated—to choose what deserves another session.</p></div></li>
+        <li><span>01</span><div><h3>Add a retrieval prompt</h3><p>Record one question your future self should be able to answer without looking.</p></div></li>
+        <li><span>02</span><div><h3>Add a work-use note</h3><p>When the idea helps, add a short, de-identified note to the same practice block.</p></div></li>
+        <li><span>03</span><div><h3>Review what helped</h3><p>Review the connection itself—not minutes accumulated—to choose what deserves another session.</p></div></li>
       </ol>
     </section>
 
     <section class="paid-review" id="paid-review" aria-labelledby="review-title">
       <div>
         <p class="eyebrow">Evidence pass · one-time $12</p>
-        <h2 id="review-title">Turn the archive into a reflection sheet.</h2>
+        <h2 id="review-title">Review practice across all weeks.</h2>
         <p>The optional pass adds an all-weeks lens and a printable, on-device transfer review. Logging, navigating every week, and JSON/CSV export always remain free.</p>
       </div>
       <div id="review-action"></div>
@@ -181,8 +181,8 @@ app.innerHTML = `
 
   <dialog id="data-dialog" aria-labelledby="data-title">
     <div class="dialog-heading"><div><p class="eyebrow">Private tools</p><h2 id="data-title">Your data & access</h2></div><button class="icon-button close-dialog" type="button" aria-label="Close">×</button></div>
-    <section class="dialog-section"><h3>Portable by design</h3><p>Exports include every practice block and application note. Import replaces this device’s current log after confirmation.</p><div class="button-row"><button class="secondary" id="export-json" type="button">Export JSON</button><button class="secondary" id="export-csv" type="button">Export CSV</button><label class="secondary file-button" for="import-json">Import JSON</label><input class="visually-hidden" id="import-json" type="file" accept="application/json,.json" /></div></section>
-    <section class="dialog-section license-section"><p class="eyebrow">Evidence pass · $12 once</p><h3>Archive lens + printable review</h3><p>A one-time purchase supports the private tool. Sociobot/Dodo is the merchant of record; refunds are handled there and revoke the license.</p><a class="primary inline-button" href="${BILLING_BASE}/api/v1/products/${PRODUCT}/checkout">Buy the evidence pass</a><form id="license-form"><label><span>Have a license? Paste it here</span><div class="input-action"><input id="license-token" type="text" autocomplete="off" spellcheck="false" aria-describedby="license-status" /><button class="secondary compact" type="submit">Verify license</button></div></label><p id="license-status" class="muted" role="status"></p></form><p class="legal-small">By buying, you agree to the <a href="/terms/">terms</a>. See how license checks work in the <a href="/privacy/">privacy notice</a>.</p></section>
+    <section class="dialog-section"><h3>Export and import</h3><p>Exports include every practice block and application note. Import replaces this device’s current log after confirmation.</p><div class="button-row"><button class="secondary" id="export-json" type="button">Export JSON</button><button class="secondary" id="export-csv" type="button">Export CSV</button><label class="secondary file-button" for="import-json">Import JSON</label><input class="visually-hidden" id="import-json" type="file" accept="application/json,.json" /></div></section>
+    <section class="dialog-section license-section"><p class="eyebrow">Evidence pass · $12 once</p><h3>All-weeks review + printable transfer review</h3><p>A one-time purchase supports the private tool. Sociobot/Dodo is the merchant of record; refunds are handled there and revoke the license.</p><a class="primary inline-button" href="${BILLING_BASE}/api/v1/products/${PRODUCT}/checkout">Buy the evidence pass</a><form id="license-form"><label><span>Have a license? Paste it here</span><div class="input-action"><input id="license-token" type="text" autocomplete="off" spellcheck="false" aria-describedby="license-status" /><button class="secondary compact" type="submit">Verify license</button></div></label><p id="license-status" class="muted" role="status"></p></form><p class="legal-small">By buying, you agree to the <a href="/terms/">terms</a>. See how license checks work in the <a href="/privacy/">privacy notice</a>.</p></section>
   </dialog>
 
   <dialog id="review-dialog" aria-labelledby="reflection-title">
@@ -275,17 +275,17 @@ function entryMarkup(entry: PracticeEntry): string {
 
 function render(): void {
   byId('week-range').textContent = archiveOpen ? 'Every week on this device' : formatWeek(weekStart);
-  byId('week-heading').textContent = archiveOpen ? 'Archive lens' : (weekStart === startOfWeek(localDate()) ? 'This week' : 'A week in practice');
+  byId('week-heading').textContent = archiveOpen ? 'All practice blocks' : (weekStart === startOfWeek(localDate()) ? 'This week' : 'Selected week');
   const visible = archiveOpen ? entries : entries.filter((entry) => weekContains(weekStart, entry.practicedOn));
   const list = byId('evidence-list');
   list.setAttribute('aria-busy', 'false');
   if (visible.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-mark" aria-hidden="true"><span></span></div><p class="eyebrow">An open shelf</p><h3>${archiveOpen ? 'No practice saved yet.' : 'Nothing recorded for this week.'}</h3><p>${archiveOpen ? 'Begin with one focused block and leave a prompt you can retrieve later.' : 'Move to another week, or leave one clear prompt from your next 10–60 minute block.'}</p><button class="primary" id="empty-add" type="button">Log practice</button></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-mark" aria-hidden="true"><span></span></div><p class="eyebrow">Log status</p><h3>${archiveOpen ? 'No practice saved yet.' : 'Nothing recorded for this week.'}</h3><p>${archiveOpen ? 'Begin with one focused block and add a retrieval prompt.' : 'Move to another week, or log one clear 10–60 minute practice block.'}</p><button class="primary" id="empty-add" type="button">Log practice</button></div>`;
     byId<HTMLButtonElement>('empty-add').addEventListener('click', () => openEntry());
   } else {
     list.innerHTML = visible.map(entryMarkup).join('');
   }
-  byId('archive-toggle').innerHTML = archiveOpen ? '<span aria-hidden="true">←</span> Return to weekly shelf' : '<span aria-hidden="true">⌁</span> View archive';
+  byId('archive-toggle').innerHTML = archiveOpen ? '<span aria-hidden="true">←</span> Return to weekly log' : '<span aria-hidden="true">⌁</span> View all practice';
   byId('previous-week').toggleAttribute('disabled', archiveOpen);
   byId('next-week').toggleAttribute('disabled', archiveOpen);
   byId('this-week').toggleAttribute('disabled', archiveOpen);
@@ -423,9 +423,9 @@ function openReview(): void {
   const used = entries.filter((entry) => entry.applications.length);
   const open = entries.filter((entry) => !entry.applications.length || entry.openQuestion);
   byId('reflection-content').innerHTML = `<div class="reflection-summary"><p><strong>${used.length ? 'Connections to revisit' : 'No links yet'}</strong><br />${used.length ? 'These are observations, not a performance measure.' : 'Add a work-use note when a practised idea shows up naturally.'}</p></div>
-    <section><h3>Where practice travelled</h3>${used.length ? `<ul class="reflection-list">${used.flatMap((entry) => entry.applications.map((application) => `<li><strong>${esc(entry.topic)}</strong><span>${esc(application.note)}</span><time datetime="${application.usedOn}">${dateLabel(application.usedOn)}</time></li>`)).join('')}</ul>` : '<p class="muted">The first connection will appear here.</p>'}</section>
-    <section><h3>Prompts worth carrying forward</h3>${open.length ? `<ul class="prompt-list">${open.map((entry) => `<li><span>${esc(entry.topic)}</span><q>${esc(entry.retrievalPrompt)}</q>${entry.openQuestion ? `<small>Still open: ${esc(entry.openQuestion)}</small>` : ''}</li>`).join('')}</ul>` : '<p class="muted">Every saved prompt currently has a work-use link.</p>'}</section>
-    <section class="reflection-questions"><h3>Write for yourself</h3><ol><li>Which idea changed what you noticed?</li><li>Which prompt still requires lookup?</li><li>What small practice block would test that gap?</li></ol></section>`;
+    <section><h3>Work-use notes</h3>${used.length ? `<ul class="reflection-list">${used.flatMap((entry) => entry.applications.map((application) => `<li><strong>${esc(entry.topic)}</strong><span>${esc(application.note)}</span><time datetime="${application.usedOn}">${dateLabel(application.usedOn)}</time></li>`)).join('')}</ul>` : '<p class="muted">The first connection will appear here.</p>'}</section>
+    <section><h3>Retrieval prompts</h3>${open.length ? `<ul class="prompt-list">${open.map((entry) => `<li><span>${esc(entry.topic)}</span><q>${esc(entry.retrievalPrompt)}</q>${entry.openQuestion ? `<small>Still open: ${esc(entry.openQuestion)}</small>` : ''}</li>`).join('')}</ul>` : '<p class="muted">Every saved prompt currently has a work-use link.</p>'}</section>
+    <section class="reflection-questions"><h3>Review questions</h3><ol><li>Which idea changed what you noticed?</li><li>Which prompt still requires lookup?</li><li>What small practice block would test that gap?</li></ol></section>`;
   reviewDialog.showModal();
 }
 

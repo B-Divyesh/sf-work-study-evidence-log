@@ -15,7 +15,7 @@ Try sample data: <https://work-study-evidence-log.sociobot.in/demo>. The demo us
 - Reload offline after the first online visit
 - Notify an open page when an updated service worker is ready
 - Automatic, light, and dark kiln themes with keyboard and mobile access
-- Optional US $12 one-time Evidence Pass for the archive lens and printable review
+- Optional US $12 one-time Evidence Pass for the all-weeks review and printable review
 - Static `/privacy/` and `/terms/` pages
 
 Weekly logging and JSON or CSV export are free. License verification sends only its token to Sociobot’s API, never log content.

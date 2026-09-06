@@ -57,7 +57,7 @@
   },
   {
     "id": "free-core-paid-review",
-    "claim": "Weekly logging and exports are free; the optional archive review costs US $12 once.",
+    "claim": "Weekly logging and exports are free; the optional all-weeks review costs US $12 once.",
     "where": "home facts, paid section, data dialog, terms, README",
     "test": "npm run test:e2e -- --grep @claim:free-core-paid-review",
     "sandbox": "fresh /demo context without a license; assert logging and both exports are available and the optional pass copy and hosted checkout URL show $12 once"

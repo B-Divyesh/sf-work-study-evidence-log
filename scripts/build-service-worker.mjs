@@ -15,7 +15,10 @@ async function filesIn(directory) {
 const paths = (await filesIn(root.pathname))
   .filter((path) => !path.endsWith('/sw.js'))
   .map((path) => `/${relative(root.pathname, path).replaceAll('\\', '/')}`)
-  .filter((path) => !path.includes('ceramic-transfer.png'));
+  .filter((path) => !path.includes('ceramic-transfer.png'))
+  // Static Web Apps consumes this file during deployment but does not publish
+  // it. It cannot be part of the runtime app shell.
+  .filter((path) => path !== '/staticwebapp.config.json');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const buildAsset = paths.find((path) => path.includes('/assets/app-')) ?? 'shell';
 const cacheName = `practice-evidence-${packageJson.version}-${buildAsset.match(/app-([^./]+)/)?.[1] ?? 'shell'}`;

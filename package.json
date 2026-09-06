@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/build-service-worker.mjs",
-    "preview": "vite preview --host 127.0.0.1",
+    "preview": "node scripts/preview-production.mjs",
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
     "test:claims": "npm test -- --testNamePattern @claim: && npm run build && playwright test --grep @claim:",
