@@ -128,7 +128,7 @@ app.innerHTML = `
       <div>
         <p class="eyebrow">Evidence pass · one-time $12</p>
         <h2 id="review-title">Review practice across all weeks.</h2>
-        <p>The optional pass adds an all-weeks lens and a printable, on-device transfer review. Logging, navigating every week, and JSON/CSV export always remain free.</p>
+        <p>The optional pass adds an all-weeks review and a printable, on-device transfer review. Logging, navigating every week, and JSON/CSV export always remain free.</p>
       </div>
       <div id="review-action"></div>
     </section>
